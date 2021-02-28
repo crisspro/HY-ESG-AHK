@@ -3,8 +3,11 @@
 ;Año: 2021
 ;Licencia: GPL-3.0
 
+#Include JSON.ahk
 
 ScriptNombre:= "HY-ESG-AHK"
+ScriptVersion:= "v1.1"
+ScriptApi:= "https://api.github.com/repos/crisspro/hy-esg-ahk/releases/latest"
 VSTNombre:=  "HY-ESG"
 VSTControl:= "JUCE"
 
@@ -85,11 +88,55 @@ Sapi.Speak(en)
 }
 }
 
+;Chequea si hay nueva versión del script
+descargar(ScriptApi, ScriptVersion)
+{
+try
+{
+enlace:= ComObjCreate("WinHttp.WinHttpRequest.5.1")
+enlace.Open("GET", ScriptApi, true)
+enlace.Send()
+enlace.WaitForResponse()
+base := enlace.ResponseText
+texto:= JSON.Load(base)
+for i, obj in texto
+if i = tag_name
+{
+If obj != %ScriptVersion%
+{ 
+if (InStr(A_language,"0a") = "3")
+{
+SoundPlay,sounds\version.wav
+MsgBox, 4, , Hay una nueva versión de este script. ¿Quieres descargarlo ahora?
+IfMsgBox Yes
+resp:= True
+}
+else
+{
+MsgBox, 4, , There is a new version of this script abailable, do you want to download it?
+IfMsgBox Yes
+resp:= True
+}
+}
+}
+If (resp = True)
+{
+for i, obj in texto
+if i = assets
+for j, k in obj
+for l, m in k
+If l = browser_download_url 
+Run %m%
+}
+}
+}
+
 SetTitleMatchMode,2
 
 ;inicio
 SoundPlay,sounds/start.wav, 1
 hablar(ScriptNombre " activado",ScriptNombre " ready")
+descargar(ScriptApi, ScriptVersion)
 
 ;detecta el plugin
 loop
